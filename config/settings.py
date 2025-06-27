@@ -38,9 +38,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    'rest_framework',       # Django REST Framework for API development
-    'users',                # Custom app for user management
-    'shop',                 # Custom app for shop management
+    'rest_framework',               # Django REST Framework for API development
+    'rest_framework.authtoken',     # Token authentication for DRF
+    'users',                        # Custom app for user management
+    'shop',                         # Custom app for shop management
 ]
 
 MIDDLEWARE = [
@@ -52,6 +53,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+}
 
 ROOT_URLCONF = 'config.urls'
 
