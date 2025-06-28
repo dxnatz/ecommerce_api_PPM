@@ -40,9 +40,9 @@ INSTALLED_APPS = [
 
     'rest_framework',               # Django REST Framework for API development
     'rest_framework.authtoken',     # Token authentication for DRF
-    'users',                        # Custom app for user management
     'shop',                         # Custom app for shop management
     'corsheaders',                  # CORS headers for cross-origin requests
+    'users.apps.UsersConfig',       # Custom user app configuration
 ]
 
 MIDDLEWARE = [
