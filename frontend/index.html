@@ -19,24 +19,67 @@
 
     <div id="response" style="margin-top: 20px; color: green;"></div>
 
-    <hr>
-    <h2>Lista Prodotti</h2>
+    <div id="content" style="display:none;">
+        <hr>
+        <h2>Lista Prodotti</h2>
 
-    <table border="1" id="product-table" style="display:none;">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Prezzo</th>
-                <th>Descrizione</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
+        <table border="1" id="product-table" style="display:none;">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Prezzo</th>
+                    <th>Descrizione</th>
+                    <th>Azione</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <h2>Contenuto Carrello</h2>
+        <table border="1" id="cart-table">
+            <thead>
+                <tr>
+                    <th>Prodotto</th>
+                    <th>Quantità</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <button id="logout-btn" style="margin-top:20px;">Logout</button>
+    </div>
 
 <script>
     const form = document.getElementById("login-form");
     const responseDiv = document.getElementById("response");
     const productTable = document.getElementById("product-table");
+    const contentDiv = document.getElementById("content");
+    const logoutBtn = document.getElementById("logout-btn");
+
+    // Funzione per mostrare contenuti dopo login
+    function mostraContenuto() {
+        contentDiv.style.display = "block";
+        form.style.display = "none";
+        responseDiv.innerText = "";
+    }
+
+    // Funzione per mostrare il login
+    function mostraLogin() {
+        contentDiv.style.display = "none";
+        form.style.display = "block";
+        responseDiv.innerText = "";
+    }
+
+    // Verifica se il token è valido chiamando un endpoint protetto
+    function verificaToken(token) {
+        return fetch("http://127.0.0.1:8000/api/products/", {
+            method: "GET",
+            headers: { "Authorization": `Bearer ${token}` }
+        }).then(res => {
+            if (res.ok) return true;
+            else throw new Error("Token non valido");
+        });
+    }
 
     function caricaProdotti() {
         const token = localStorage.getItem("token");
@@ -62,32 +105,22 @@
                     <td>${prodotto.price}</td>
                     <td>${prodotto.description}</td>
                     <td><button class="add-to-cart" data-id="${prodotto.id}">Aggiungi al carrello</button></td>
-
                 `;
                 tbody.appendChild(riga);
             });
 
-            productTable.style.display = "table";  // mostra la tabella dopo aver caricato dati
+            productTable.style.display = "table";
         })
         .catch(err => {
             alert(err.message);
         });
     }
 
-    document.querySelector("#product-table tbody").addEventListener("click", function(event) {
-    if (event.target.classList.contains("add-to-cart")) {
-        const productId = event.target.getAttribute("data-id");
-        aggiungiAlCarrello(productId);
-    }
-});
-
-function aggiungiAlCarrello(productId) {
+    function aggiungiAlCarrello(productId) {
     const token = localStorage.getItem("token");
 
-    if (!token) {
-        alert("Token mancante! Fai login prima.");
-        return;
-    }
+    const bodyData = { product_id: productId, quantity: 1 };  // qui product_id
+    console.log("Body richiesta:", bodyData);
 
     fetch("http://127.0.0.1:8000/api/cart/items/", {
         method: "POST",
@@ -95,7 +128,7 @@ function aggiungiAlCarrello(productId) {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
         },
-        body: JSON.stringify({ product: productId, quantity: 1 })
+        body: JSON.stringify(bodyData)
     })
     .then(res => {
         if (!res.ok) {
@@ -106,12 +139,74 @@ function aggiungiAlCarrello(productId) {
     .then(data => {
         console.log("Risposta:", data);
         alert("Prodotto aggiunto al carrello!");
+        caricaCarrello();  // Ricarica il carrello dopo l'aggiunta
     })
     .catch(err => {
         console.error("Errore:", err);
         alert("Errore nell'aggiunta al carrello: " + err.message);
     });
 }
+
+    function caricaCarrello() {
+    const token = localStorage.getItem("token");
+
+    fetch("http://127.0.0.1:8000/api/cart/", {
+        method: "GET",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Errore nel recupero del carrello");
+        return res.json();
+    })
+    .then(data => {
+        const tbody = document.querySelector("#cart-table tbody");
+        tbody.innerHTML = "";
+
+        // Raggruppa per prodotto
+        const prodottiRaggruppati = {};
+
+        data.items.forEach(item => {
+            const nomeProdotto = item.product && item.product.name ? item.product.name : "Prodotto sconosciuto";
+            if (prodottiRaggruppati[nomeProdotto]) {
+                prodottiRaggruppati[nomeProdotto] += item.quantity;
+            } else {
+                prodottiRaggruppati[nomeProdotto] = item.quantity;
+            }
+        });
+
+        // Mostra una riga per ogni prodotto raggruppato
+        for (const [nome, quantita] of Object.entries(prodottiRaggruppati)) {
+            const riga = document.createElement("tr");
+            riga.innerHTML = `
+                <td>${nome}</td>
+                <td>${quantita}</td>
+            `;
+            tbody.appendChild(riga);
+        }
+    })
+    .catch(err => {
+        alert(err.message);
+    });
+}
+
+    // Controllo all’avvio se token esiste e validità
+    const token = localStorage.getItem("token");
+    if (token) {
+        verificaToken(token)
+        .then(() => {
+            mostraContenuto();
+            caricaProdotti();
+            caricaCarrello();
+        })
+        .catch(() => {
+            localStorage.removeItem("token");
+            mostraLogin();
+        });
+    } else {
+        mostraLogin();
+    }
 
     form.addEventListener("submit", function(event) {
         event.preventDefault();
@@ -127,24 +222,38 @@ function aggiungiAlCarrello(productId) {
             body: JSON.stringify({ username, password })
         })
         .then(res => {
-            if (!res.ok) {
-                throw new Error("Credenziali errate");
-            }
+            if (!res.ok) throw new Error("Credenziali errate");
             return res.json();
         })
         .then(data => {
-            console.log("Risposta login:", data);
             localStorage.setItem("token", data.access);
             responseDiv.innerText = "Login effettuato con successo!";
             responseDiv.style.color = "green";
 
-            caricaProdotti();  // carica prodotti solo dopo login corretto
+            mostraContenuto();
+            caricaProdotti();
+            caricaCarrello();
         })
         .catch(err => {
             responseDiv.innerText = err.message;
             responseDiv.style.color = "red";
         });
     });
+
+    // Listener per aggiungere prodotti al carrello
+    document.querySelector("#product-table tbody").addEventListener("click", function(event) {
+        if (event.target.classList.contains("add-to-cart")) {
+            const productId = event.target.getAttribute("data-id");
+            aggiungiAlCarrello(productId);
+        }
+    });
+
+    // Logout
+    logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        mostraLogin();
+    });
+
 </script>
 
 </body>

@@ -6,7 +6,15 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
+# Per il CartItem, definiamo product come campo scrivibile (non solo read_only)
 class CartItemSerializer(serializers.ModelSerializer):
+    # Per la lettura: prodotto completo
+    product = ProductSerializer(read_only=True)
+    # Per la scrittura: accetta solo l'id del prodotto
+    product_id = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.all(), source='product', write_only=True
+    )
+
     class Meta:
         model = CartItem
         exclude = ['cart']
@@ -19,6 +27,7 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ['id', 'user', 'items']
 
 class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductSerializer(read_only=True)
     class Meta:
         model = OrderItem
         fields = ['product', 'quantity']
