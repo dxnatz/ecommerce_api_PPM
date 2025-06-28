@@ -1,5 +1,4 @@
-from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, permissions
 
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -28,3 +27,10 @@ class UserBanAPIView(generics.UpdateAPIView):
 
     def perform_update(self, serializer):
         serializer.save(is_banned=True)
+
+class UserMeAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
