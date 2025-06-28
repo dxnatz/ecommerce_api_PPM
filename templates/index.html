@@ -332,18 +332,24 @@
         tbody.innerHTML = "";
 
         const prodottiRaggruppati = {};
+        let totale = 0;  // variabile per il totale
 
         data.items.forEach(item => {
             const nomeProdotto = item.product && item.product.name ? item.product.name : "Prodotto sconosciuto";
+            const prezzoProdotto = item.product && item.product.discounted_price ? item.product.discounted_price : item.product.price;
+
             if (prodottiRaggruppati[nomeProdotto]) {
                 prodottiRaggruppati[nomeProdotto].quantity += item.quantity;
             } else {
                 prodottiRaggruppati[nomeProdotto] = {
                     quantity: item.quantity,
-                    cartItemId: item.id,       // per "Rimuovi uno"
-                    productId: item.product.id // per "Rimuovi tutti"
+                    cartItemId: item.id,
+                    productId: item.product.id,
+                    prezzo: prezzoProdotto
                 };
             }
+
+            totale += prezzoProdotto * item.quantity;  // sommo il costo parziale
         });
 
         for (const [nome, info] of Object.entries(prodottiRaggruppati)) {
@@ -359,7 +365,31 @@
             tbody.appendChild(riga);
         }
 
-        // **RIMOSSI i listener diretti qui!**
+        // Qui aggiorni o crei l'elemento per mostrare il totale sotto la tabella
+        let totalDiv = document.getElementById("cart-total");
+        if (!totalDiv) {
+            totalDiv = document.createElement("div");
+            totalDiv.id = "cart-total";
+            totalDiv.style.marginTop = "10px";
+            totalDiv.style.fontWeight = "bold";
+            document.getElementById("cart-table").after(totalDiv);
+        }
+        totalDiv.innerText = `Totale ordine: € ${totale.toFixed(2)}`;
+
+        // Restante codice per i listener (rimuovi uno, rimuovi tutti)
+        document.querySelectorAll(".remove-one").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const id = e.target.getAttribute("data-id");
+                decrementItem(id);
+            });
+        });
+
+        document.querySelectorAll(".remove-all").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const productId = e.target.getAttribute("data-product-id");
+                rimuoviTutti(productId);
+            });
+        });
     })
     .catch(err => {
         alert(err.message);
