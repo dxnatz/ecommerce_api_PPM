@@ -1,9 +1,10 @@
 from django.urls import path
-from .views import CustomAuthToken, UserBanAPIView, UserMeAPIView, UserDeleteAPIView
+from .views import CustomAuthToken, UserBanAPIView, UserMeAPIView, UserDeleteAPIView, UserUnbanAPIView
 
 urlpatterns = [
     path('login/', CustomAuthToken.as_view(), name='api_token_auth'),
     path('ban/<int:pk>/', UserBanAPIView.as_view(), name='ban-user'),
     path('me/', UserMeAPIView.as_view(), name='user-me'),
     path('<int:pk>/delete/', UserDeleteAPIView.as_view(), name='user-delete'),
+    path('unban/<int:pk>/', UserUnbanAPIView.as_view(), name='user-unban'),
 ]
