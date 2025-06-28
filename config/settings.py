@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',     # Token authentication for DRF
     'users',                        # Custom app for user management
     'shop',                         # Custom app for shop management
+    'corsheaders',                  # CORS headers for cross-origin requests
 ]
 
 MIDDLEWARE = [
@@ -52,11 +53,12 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
 }
 
@@ -123,6 +125,8 @@ USE_I18N = True
 USE_TZ = True
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Static files (CSS, JavaScript, Images)

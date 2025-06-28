@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>Login E-commerce</title>
+</head>
+<body>
+    <h1>Login</h1>
+
+    <form id="login-form">
+        <label for="username">Username:</label><br>
+        <input type="text" id="username" required><br>
+
+        <label for="password">Password:</label><br>
+        <input type="password" id="password" required><br><br>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <div id="response" style="margin-top: 20px; color: green;"></div>
+
+    <hr>
+    <h2>Lista Prodotti</h2>
+
+    <table border="1" id="product-table" style="display:none;">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Prezzo</th>
+                <th>Descrizione</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+<script>
+    const form = document.getElementById("login-form");
+    const responseDiv = document.getElementById("response");
+    const productTable = document.getElementById("product-table");
+
+    function caricaProdotti() {
+        const token = localStorage.getItem("token");
+
+        fetch("http://127.0.0.1:8000/api/products/", {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("Errore nel recupero dei prodotti");
+            return res.json();
+        })
+        .then(data => {
+            const tbody = document.querySelector("#product-table tbody");
+            tbody.innerHTML = "";
+
+            data.forEach(prodotto => {
+                const riga = document.createElement("tr");
+                riga.innerHTML = `
+                    <td>${prodotto.name}</td>
+                    <td>${prodotto.price}</td>
+                    <td>${prodotto.description}</td>
+                    <td><button class="add-to-cart" data-id="${prodotto.id}">Aggiungi al carrello</button></td>
+
+                `;
+                tbody.appendChild(riga);
+            });
+
+            productTable.style.display = "table";  // mostra la tabella dopo aver caricato dati
+        })
+        .catch(err => {
+            alert(err.message);
+        });
+    }
+
+    document.querySelector("#product-table tbody").addEventListener("click", function(event) {
+    if (event.target.classList.contains("add-to-cart")) {
+        const productId = event.target.getAttribute("data-id");
+        aggiungiAlCarrello(productId);
+    }
+});
+
+function aggiungiAlCarrello(productId) {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        alert("Token mancante! Fai login prima.");
+        return;
+    }
+
+    fetch("http://127.0.0.1:8000/api/cart/items/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify({ product: productId, quantity: 1 })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Errore ${res.status}: ${res.statusText}`);
+        }
+        return res.json();
+    })
+    .then(data => {
+        console.log("Risposta:", data);
+        alert("Prodotto aggiunto al carrello!");
+    })
+    .catch(err => {
+        console.error("Errore:", err);
+        alert("Errore nell'aggiunta al carrello: " + err.message);
+    });
+}
+
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        fetch("http://127.0.0.1:8000/api/users/token/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error("Credenziali errate");
+            }
+            return res.json();
+        })
+        .then(data => {
+            console.log("Risposta login:", data);
+            localStorage.setItem("token", data.access);
+            responseDiv.innerText = "Login effettuato con successo!";
+            responseDiv.style.color = "green";
+
+            caricaProdotti();  // carica prodotti solo dopo login corretto
+        })
+        .catch(err => {
+            responseDiv.innerText = err.message;
+            responseDiv.style.color = "red";
+        });
+    });
+</script>
+
+</body>
+</html>
