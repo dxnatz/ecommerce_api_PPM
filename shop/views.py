@@ -57,3 +57,6 @@ class OrderDeleteAPIView(generics.DestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated, IsModerator]
+
+def index(request):
+    return render(request, "index.html")
