@@ -5,8 +5,9 @@
     <title>Login E-commerce</title>
 </head>
 <body>
-    <h1>Login</h1>
+    <h1 id="page-title">Login</h1>
 
+    <!-- Form Login -->
     <form id="login-form">
         <label for="username">Username:</label><br>
         <input type="text" id="username" required><br>
@@ -17,7 +18,28 @@
         <button type="submit">Login</button>
     </form>
 
+    <button id="show-register-btn" style="margin-top:10px;">Registrati</button>
+
+    <!-- Form Registrazione (nascosto di default) -->
+    <form id="register-form" style="display:none; margin-top:20px;">
+        <label for="reg-username">Username:</label><br>
+        <input type="text" id="reg-username" required><br>
+
+        <label for="reg-email">Email:</label><br>
+        <input type="email" id="reg-email" required><br>
+
+        <label for="reg-password">Password:</label><br>
+        <input type="password" id="reg-password" required><br>
+
+        <label for="reg-bio">Bio:</label><br>
+        <textarea id="reg-bio"></textarea><br><br>
+
+        <button type="submit">Registrati</button>
+        <button type="button" id="back-to-login-btn" style="margin-left:10px;">Torna al login</button>
+    </form>
+
     <div id="response" style="margin-top: 20px; color: green;"></div>
+    <div id="register-response" style="margin-top: 10px;"></div>
 
     <div id="content" style="display:none;">
         <hr>
@@ -41,33 +63,61 @@
                 <tr>
                     <th>Prodotto</th>
                     <th>Quantità</th>
+                    <th>Azione</th>
                 </tr>
             </thead>
             <tbody></tbody>
         </table>
 
+        <button id="checkout-btn" style="margin-top:20px;">Checkout</button>
         <button id="logout-btn" style="margin-top:20px;">Logout</button>
     </div>
 
 <script>
     const form = document.getElementById("login-form");
+    const registerForm = document.getElementById("register-form");
     const responseDiv = document.getElementById("response");
+    const registerResponseDiv = document.getElementById("register-response");
     const productTable = document.getElementById("product-table");
     const contentDiv = document.getElementById("content");
     const logoutBtn = document.getElementById("logout-btn");
+    const showRegisterBtn = document.getElementById("show-register-btn");
+    const backToLoginBtn = document.getElementById("back-to-login-btn");
+    const pageTitle = document.getElementById("page-title");
 
     // Funzione per mostrare contenuti dopo login
     function mostraContenuto() {
         contentDiv.style.display = "block";
         form.style.display = "none";
+        registerForm.style.display = "none";
+        showRegisterBtn.style.display = "none";
+        backToLoginBtn.style.display = "none";
         responseDiv.innerText = "";
+        registerResponseDiv.innerText = "";
+        pageTitle.innerText = "Benvenuto";
     }
 
     // Funzione per mostrare il login
     function mostraLogin() {
         contentDiv.style.display = "none";
         form.style.display = "block";
+        registerForm.style.display = "none";
+        showRegisterBtn.style.display = "inline-block";
+        backToLoginBtn.style.display = "none";
         responseDiv.innerText = "";
+        registerResponseDiv.innerText = "";
+        pageTitle.innerText = "Login";
+    }
+
+    // Mostra form registrazione
+    function mostraRegistrazione() {
+        form.style.display = "none";
+        registerForm.style.display = "block";
+        showRegisterBtn.style.display = "none";
+        backToLoginBtn.style.display = "inline-block";
+        responseDiv.innerText = "";
+        registerResponseDiv.innerText = "";
+        pageTitle.innerText = "Registrazione";
     }
 
     // Verifica se il token è valido chiamando un endpoint protetto
@@ -81,54 +131,135 @@
         });
     }
 
-    function caricaProdotti() {
-        const token = localStorage.getItem("token");
+    // Al caricamento pagina, verifica token
+    const token = localStorage.getItem("token");
+    if (token) {
+        verificaToken(token)
+        .then(() => {
+            mostraContenuto();
+            caricaProdotti();
+            caricaCarrello();
+        })
+        .catch(() => {
+            localStorage.removeItem("token");
+            mostraLogin();
+        });
+    } else {
+        mostraLogin();
+    }
 
-        fetch("http://127.0.0.1:8000/api/products/", {
-            method: "GET",
+    // Event listeners
+    form.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+
+        fetch("http://127.0.0.1:8000/api/users/token/", {
+            method: "POST",
             headers: {
-                "Authorization": `Bearer ${token}`
-            }
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
         })
         .then(res => {
-            if (!res.ok) throw new Error("Errore nel recupero dei prodotti");
+            if (!res.ok) throw new Error("Credenziali errate");
             return res.json();
         })
         .then(data => {
-            const tbody = document.querySelector("#product-table tbody");
-            tbody.innerHTML = "";
+            localStorage.setItem("token", data.access);
+            responseDiv.innerText = "Login effettuato con successo!";
+            responseDiv.style.color = "green";
 
-            data.forEach(prodotto => {
-                const riga = document.createElement("tr");
-                riga.innerHTML = `
-                    <td>${prodotto.name}</td>
-                    <td>${prodotto.price}</td>
-                    <td>${prodotto.description}</td>
-                    <td><button class="add-to-cart" data-id="${prodotto.id}">Aggiungi al carrello</button></td>
-                `;
-                tbody.appendChild(riga);
-            });
-
-            productTable.style.display = "table";
+            mostraContenuto();
+            caricaProdotti();
+            caricaCarrello();
         })
         .catch(err => {
-            alert(err.message);
+            responseDiv.innerText = err.message;
+            responseDiv.style.color = "red";
         });
-    }
+    });
 
-    function rimuoviDalCarrello(itemId) {
+    registerForm.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById("reg-username").value;
+        const email = document.getElementById("reg-email").value;
+        const password = document.getElementById("reg-password").value;
+        const bio = document.getElementById("reg-bio").value;
+
+        fetch("http://127.0.0.1:8000/api/users/register/", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, email, password, bio })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(errData => {
+                    let msg = "Errore nella registrazione";
+                    if (errData) {
+                        msg += ": " + JSON.stringify(errData);
+                    }
+                    throw new Error(msg);
+                });
+            }
+            return res.json();
+        })
+        .then(data => {
+            registerResponseDiv.style.color = "green";
+            registerResponseDiv.innerText = "Registrazione avvenuta con successo! Ora effettua il login.";
+            registerForm.reset();
+        })
+        .catch(err => {
+            registerResponseDiv.style.color = "red";
+            registerResponseDiv.innerText = err.message;
+        });
+    });
+
+    showRegisterBtn.addEventListener("click", mostraRegistrazione);
+    backToLoginBtn.addEventListener("click", mostraLogin);
+
+    // Le tue funzioni caricaProdotti, caricaCarrello, aggiungiAlCarrello, decrementItem, rimuoviTutti, rimuoviDalCarrello restano uguali (copiate da te)...
+
+    // (Inserisci qui tutte le funzioni caricaProdotti, caricaCarrello, aggiungiAlCarrello ecc... come nel tuo codice attuale)
+
+    function caricaProdotti() {
     const token = localStorage.getItem("token");
 
-    fetch(`http://127.0.0.1:8000/api/cart/items/${itemId}/delete/`, {
-        method: "DELETE",
+    fetch("http://127.0.0.1:8000/api/products/", {
+        method: "GET",
         headers: {
             "Authorization": `Bearer ${token}`
         }
     })
     .then(res => {
-        if (!res.ok) throw new Error("Errore nella rimozione");
-        alert("Prodotto rimosso dal carrello");
-        caricaCarrello();  // aggiorna la tabella dopo la rimozione
+        if (!res.ok) throw new Error("Errore nel recupero dei prodotti");
+        return res.json();
+    })
+    .then(data => {
+        const tbody = document.querySelector("#product-table tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(prodotto => {
+            const bottone = prodotto.is_available
+                ? `<input type="number" min="1" value="1" id="qty-${prodotto.id}" style="width:50px; margin-right:5px;">
+                   <button class="add-to-cart" data-id="${prodotto.id}">Aggiungi al carrello</button>`
+                : `<button disabled style="color:gray;">Non disponibile</button>`;
+
+            const riga = document.createElement("tr");
+            riga.innerHTML = `
+                <td>${prodotto.name}</td>
+                <td>${prodotto.price}</td>
+                <td>${prodotto.description}</td>
+                <td>${bottone}</td>
+            `;
+            tbody.appendChild(riga);
+        });
+
+        productTable.style.display = "table";
     })
     .catch(err => {
         alert(err.message);
@@ -137,32 +268,101 @@
 
     function aggiungiAlCarrello(productId) {
     const token = localStorage.getItem("token");
+    const qtyInput = document.getElementById(`qty-${productId}`);
+    let quantity = 1;
+    if (qtyInput) {
+        quantity = parseInt(qtyInput.value);
+        if (isNaN(quantity) || quantity < 1) quantity = 1;
+    }
 
-    const bodyData = { product_id: productId, quantity: 1 };  // qui product_id
+    const bodyData = { product_id: productId, quantity: quantity };
     console.log("Body richiesta:", bodyData);
 
     fetch("http://127.0.0.1:8000/api/cart/items/", {
-        method: "POST",
+    method: "POST",
+    headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+    },
+    body: JSON.stringify(bodyData)
+})
+.then(async res => {
+    if (!res.ok) {
+        // Provo a leggere il messaggio di errore dal JSON
+        let errMsg = `Errore ${res.status}: ${res.statusText}`;
+        try {
+            const errData = await res.json();
+            // Se è un ValidationError DRF, potrebbe essere un oggetto con chiavi e liste di messaggi
+            if (errData && typeof errData === 'object') {
+                const messages = Object.values(errData).flat();
+                errMsg = messages.join(" ");
+            }
+        } catch {
+            // se non è JSON o fallisce, lascio il messaggio di default
+        }
+        throw new Error(errMsg);
+    }
+    return res.json();
+})
+.then(data => {
+    alert("Prodotto aggiunto al carrello!");
+    caricaCarrello();
+    caricaProdotti();
+})
+.catch(err => {
+    alert(err.message);  // Qui mostri il messaggio personalizzato
+});
+}
+
+    function caricaCarrello() {
+    const token = localStorage.getItem("token");
+
+    fetch("http://127.0.0.1:8000/api/cart/", {
+        method: "GET",
         headers: {
-            "Content-Type": "application/json",
             "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(bodyData)
+        }
     })
     .then(res => {
-        if (!res.ok) {
-            throw new Error(`Errore ${res.status}: ${res.statusText}`);
-        }
+        if (!res.ok) throw new Error("Errore nel recupero del carrello");
         return res.json();
     })
     .then(data => {
-        console.log("Risposta:", data);
-        alert("Prodotto aggiunto al carrello!");
-        caricaCarrello();  // Ricarica il carrello dopo l'aggiunta
+        const tbody = document.querySelector("#cart-table tbody");
+        tbody.innerHTML = "";
+
+        const prodottiRaggruppati = {};
+
+        data.items.forEach(item => {
+            const nomeProdotto = item.product && item.product.name ? item.product.name : "Prodotto sconosciuto";
+            if (prodottiRaggruppati[nomeProdotto]) {
+                prodottiRaggruppati[nomeProdotto].quantity += item.quantity;
+            } else {
+                prodottiRaggruppati[nomeProdotto] = {
+                    quantity: item.quantity,
+                    cartItemId: item.id,       // per "Rimuovi uno"
+                    productId: item.product.id // per "Rimuovi tutti"
+                };
+            }
+        });
+
+        for (const [nome, info] of Object.entries(prodottiRaggruppati)) {
+            const riga = document.createElement("tr");
+            riga.innerHTML = `
+                <td>${nome}</td>
+                <td>${info.quantity}</td>
+                <td>
+                    <button class="remove-one" data-id="${info.cartItemId}">Rimuovi uno</button>
+                    <button class="remove-all" data-product-id="${info.productId}">Rimuovi tutti</button>
+                </td>
+            `;
+            tbody.appendChild(riga);
+        }
+
+        // **RIMOSSI i listener diretti qui!**
     })
     .catch(err => {
-        console.error("Errore:", err);
-        alert("Errore nell'aggiunta al carrello: " + err.message);
+        alert(err.message);
     });
 }
 
@@ -213,130 +413,40 @@
     });
 }
 
-    function caricaCarrello() {
+    document.getElementById("checkout-btn").addEventListener("click", () => {
     const token = localStorage.getItem("token");
 
-    fetch("http://127.0.0.1:8000/api/cart/", {
-        method: "GET",
+    fetch("http://127.0.0.1:8000/api/cart/checkout/", {
+        method: "POST",
         headers: {
             "Authorization": `Bearer ${token}`
         }
     })
     .then(res => {
-        if (!res.ok) throw new Error("Errore nel recupero del carrello");
+        if (!res.ok) throw new Error("Errore durante il checkout");
         return res.json();
     })
     .then(data => {
-        const tbody = document.querySelector("#cart-table tbody");
-        tbody.innerHTML = "";
-
-        const prodottiRaggruppati = {};
-
-        data.items.forEach(item => {
-            const nomeProdotto = item.product && item.product.name ? item.product.name : "Prodotto sconosciuto";
-            if (prodottiRaggruppati[nomeProdotto]) {
-                prodottiRaggruppati[nomeProdotto].quantity += item.quantity;
-            } else {
-                prodottiRaggruppati[nomeProdotto] = {
-                    quantity: item.quantity,
-                    cartItemId: item.id,       // per "Rimuovi uno"
-                    productId: item.product.id // per "Rimuovi tutti"
-                };
-            }
-        });
-
-        for (const [nome, info] of Object.entries(prodottiRaggruppati)) {
-            const riga = document.createElement("tr");
-            riga.innerHTML = `
-                <td>${nome}</td>
-                <td>${info.quantity}</td>
-                <td>
-                    <button class="remove-one" data-id="${info.cartItemId}">Rimuovi uno</button>
-                    <button class="remove-all" data-product-id="${info.productId}">Rimuovi tutti</button>
-                </td>
-            `;
-            tbody.appendChild(riga);
-        }
-
-        // Listener per "Rimuovi uno"
-        document.querySelectorAll(".remove-one").forEach(button => {
-            button.addEventListener("click", (e) => {
-                const id = e.target.getAttribute("data-id");
-                decrementItem(id);
-            });
-        });
-
-        // Listener per "Rimuovi tutti"
-        document.querySelectorAll(".remove-all").forEach(button => {
-            button.addEventListener("click", (e) => {
-                const productId = e.target.getAttribute("data-product-id");
-                rimuoviTutti(productId);
-            });
-        });
+        alert(data.detail);
+        caricaCarrello(); // aggiorna carrello a vuoto
+        caricaProdotti();
     })
     .catch(err => {
         alert(err.message);
     });
-}
-
-
-    // Controllo all’avvio se token esiste e validità
-    const token = localStorage.getItem("token");
-    if (token) {
-        verificaToken(token)
-        .then(() => {
-            mostraContenuto();
-            caricaProdotti();
-            caricaCarrello();
-        })
-        .catch(() => {
-            localStorage.removeItem("token");
-            mostraLogin();
-        });
-    } else {
-        mostraLogin();
-    }
-
-    form.addEventListener("submit", function(event) {
-        event.preventDefault();
-
-        const username = document.getElementById("username").value;
-        const password = document.getElementById("password").value;
-
-        fetch("http://127.0.0.1:8000/api/users/token/", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ username, password })
-        })
-        .then(res => {
-            if (!res.ok) throw new Error("Credenziali errate");
-            return res.json();
-        })
-        .then(data => {
-            localStorage.setItem("token", data.access);
-            responseDiv.innerText = "Login effettuato con successo!";
-            responseDiv.style.color = "green";
-
-            mostraContenuto();
-            caricaProdotti();
-            caricaCarrello();
-        })
-        .catch(err => {
-            responseDiv.innerText = err.message;
-            responseDiv.style.color = "red";
-        });
-    });
+});
 
     document.querySelector("#cart-table tbody").addEventListener("click", function(event) {
-    if (event.target.classList.contains("remove-from-cart")) {
-        const itemId = event.target.getAttribute("data-id");
-        rimuoviDalCarrello(itemId);
-    }
+        if (event.target.classList.contains("remove-one")) {
+            const id = event.target.getAttribute("data-id");
+            decrementItem(id);
+        }
+        if (event.target.classList.contains("remove-all")) {
+            const productId = event.target.getAttribute("data-product-id");
+            rimuoviTutti(productId);
+        }
     });
 
-    // Listener per aggiungere prodotti al carrello
     document.querySelector("#product-table tbody").addEventListener("click", function(event) {
         if (event.target.classList.contains("add-to-cart")) {
             const productId = event.target.getAttribute("data-id");
