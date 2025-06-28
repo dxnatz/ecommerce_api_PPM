@@ -1,6 +1,8 @@
 from django.shortcuts import render
 
 from rest_framework import generics
+
+from users.permissions import IsModerator
 from .models import Product, Cart, CartItem, Order, OrderItem
 from .serializers import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
@@ -50,3 +52,8 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
 
         # Svuota il carrello
         cart.items.all().delete()
+
+class OrderDeleteAPIView(generics.DestroyAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated, IsModerator]

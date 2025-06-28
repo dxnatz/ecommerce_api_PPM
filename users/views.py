@@ -1,8 +1,15 @@
 from django.shortcuts import render
+from rest_framework import generics
 
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from users.models import CustomUser
+from users.permissions import IsModerator
+from users.serializers import UserSerializer
+
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -13,3 +20,11 @@ class CustomAuthToken(ObtainAuthToken):
             'user_id': token.user_id,
             'username': token.user.username
         })
+
+class UserBanAPIView(generics.UpdateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAuthenticated, IsModerator]
+
+    def perform_update(self, serializer):
+        serializer.save(is_banned=True)
