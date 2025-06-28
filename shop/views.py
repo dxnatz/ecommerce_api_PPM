@@ -1,6 +1,8 @@
 from django.shortcuts import render
 
-from rest_framework import generics
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from users.permissions import IsModerator
 from .models import Product, Cart, CartItem, Order, OrderItem
@@ -60,3 +62,31 @@ class OrderDeleteAPIView(generics.DestroyAPIView):
 
 def index(request):
     return render(request, "index.html")
+
+class CartItemDecrementAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk):
+        try:
+            cart_item = CartItem.objects.get(pk=pk, cart__user=request.user)
+        except CartItem.DoesNotExist:
+            return Response({"detail": "Elemento carrello non trovato."}, status=status.HTTP_404_NOT_FOUND)
+
+        if cart_item.quantity > 1:
+            cart_item.quantity -= 1
+            cart_item.save()
+        else:
+            cart_item.delete()
+
+        return Response({"detail": "Quantità decrementata correttamente."}, status=status.HTTP_200_OK)
+
+class RemoveAllFromCartAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, product_id):
+        cart = Cart.objects.get(user=request.user)
+        items_deleted, _ = CartItem.objects.filter(cart=cart, product__id=product_id).delete()
+        return Response(
+            {"detail": f"Rimossi {items_deleted} item dal carrello."},
+            status=status.HTTP_204_NO_CONTENT
+        )

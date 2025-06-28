@@ -116,6 +116,25 @@
         });
     }
 
+    function rimuoviDalCarrello(itemId) {
+    const token = localStorage.getItem("token");
+
+    fetch(`http://127.0.0.1:8000/api/cart/items/${itemId}/delete/`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Errore nella rimozione");
+        alert("Prodotto rimosso dal carrello");
+        caricaCarrello();  // aggiorna la tabella dopo la rimozione
+    })
+    .catch(err => {
+        alert(err.message);
+    });
+}
+
     function aggiungiAlCarrello(productId) {
     const token = localStorage.getItem("token");
 
@@ -147,6 +166,53 @@
     });
 }
 
+    function decrementItem(id) {
+    const token = localStorage.getItem("token");
+
+    fetch(`http://127.0.0.1:8000/api/cart/items/${id}/decrement/`, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+    .then(res => {
+        if (!res.ok) throw new Error("Errore nel decremento quantità");
+        return res.json();
+    })
+    .then(data => {
+        alert(data.detail);
+        caricaCarrello();  // aggiorna il carrello dopo la modifica
+    })
+    .catch(err => {
+        alert(err.message);
+    });
+}
+
+    function rimuoviTutti(productId) {
+    const token = localStorage.getItem("token");
+
+    fetch(`http://127.0.0.1:8000/api/cart/items/remove_all/${productId}/`, {
+        method: "DELETE",
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error(`Errore ${res.status}: ${res.statusText}`);
+        }
+        return res.text(); // o .json() se rispondi con JSON
+    })
+    .then(() => {
+        alert("Prodotto rimosso completamente dal carrello!");
+        caricaCarrello(); // aggiorna la tabella
+    })
+    .catch(err => {
+        console.error("Errore:", err);
+        alert("Errore nella rimozione: " + err.message);
+    });
+}
+
     function caricaCarrello() {
     const token = localStorage.getItem("token");
 
@@ -164,32 +230,55 @@
         const tbody = document.querySelector("#cart-table tbody");
         tbody.innerHTML = "";
 
-        // Raggruppa per prodotto
         const prodottiRaggruppati = {};
 
         data.items.forEach(item => {
             const nomeProdotto = item.product && item.product.name ? item.product.name : "Prodotto sconosciuto";
             if (prodottiRaggruppati[nomeProdotto]) {
-                prodottiRaggruppati[nomeProdotto] += item.quantity;
+                prodottiRaggruppati[nomeProdotto].quantity += item.quantity;
             } else {
-                prodottiRaggruppati[nomeProdotto] = item.quantity;
+                prodottiRaggruppati[nomeProdotto] = {
+                    quantity: item.quantity,
+                    cartItemId: item.id,       // per "Rimuovi uno"
+                    productId: item.product.id // per "Rimuovi tutti"
+                };
             }
         });
 
-        // Mostra una riga per ogni prodotto raggruppato
-        for (const [nome, quantita] of Object.entries(prodottiRaggruppati)) {
+        for (const [nome, info] of Object.entries(prodottiRaggruppati)) {
             const riga = document.createElement("tr");
             riga.innerHTML = `
                 <td>${nome}</td>
-                <td>${quantita}</td>
+                <td>${info.quantity}</td>
+                <td>
+                    <button class="remove-one" data-id="${info.cartItemId}">Rimuovi uno</button>
+                    <button class="remove-all" data-product-id="${info.productId}">Rimuovi tutti</button>
+                </td>
             `;
             tbody.appendChild(riga);
         }
+
+        // Listener per "Rimuovi uno"
+        document.querySelectorAll(".remove-one").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const id = e.target.getAttribute("data-id");
+                decrementItem(id);
+            });
+        });
+
+        // Listener per "Rimuovi tutti"
+        document.querySelectorAll(".remove-all").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const productId = e.target.getAttribute("data-product-id");
+                rimuoviTutti(productId);
+            });
+        });
     })
     .catch(err => {
         alert(err.message);
     });
 }
+
 
     // Controllo all’avvio se token esiste e validità
     const token = localStorage.getItem("token");
@@ -238,6 +327,13 @@
             responseDiv.innerText = err.message;
             responseDiv.style.color = "red";
         });
+    });
+
+    document.querySelector("#cart-table tbody").addEventListener("click", function(event) {
+    if (event.target.classList.contains("remove-from-cart")) {
+        const itemId = event.target.getAttribute("data-id");
+        rimuoviDalCarrello(itemId);
+    }
     });
 
     // Listener per aggiungere prodotti al carrello
