@@ -4,11 +4,9 @@ This project is a **Django-based e-commerce platform** with a RESTful API, desig
 
 ## ⚙️ Technologies Used
 
-- Django 4.2
-- Django REST Framework
-- Simple JWT for authentication
-- SQLite (pre-populated for demo purposes)
-- Python 3.9
+- **Python:** for the back-end logic and handling data.
+- **HTML:** to create a user-friendly interface.
+- JavaScript: to enhance interactivity on the front-end.
 
 ## 🔐 Authentication
 
