@@ -1,6 +1,5 @@
 from django.urls import path
-from .views import ProductListCreateAPIView, CartDetailAPIView, CartItemCreateAPIView, OrderListCreateAPIView, \
-    OrderDeleteAPIView, CartItemDecrementAPIView, RemoveAllFromCartAPIView, CheckoutAPIView
+from .views import ProductListCreateAPIView, CartDetailAPIView, CartItemCreateAPIView, OrderListCreateAPIView, OrderDeleteAPIView, CartItemDecrementAPIView, RemoveAllFromCartAPIView, CheckoutAPIView
 
 urlpatterns = [
     path('products/', ProductListCreateAPIView.as_view(), name='product-list'),

@@ -1,6 +1,5 @@
-from rest_framework.permissions import BasePermission
+from rest_framework import permissions
 
-class IsModerator(BasePermission):
-    # Custom permission to only allow moderators to access certain views.
+class IsModeratore(permissions.BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_authenticated and request.user.is_moderator
+        return request.user and request.user.groups.filter(name='Moderatore').exists()

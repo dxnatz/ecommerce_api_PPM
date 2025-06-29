@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',               # Django REST Framework for API development
-    'rest_framework.authtoken',     # Token authentication for DRF
     'shop',                         # Custom app for shop management
     'corsheaders',                  # CORS headers for cross-origin requests
     'users.apps.UsersConfig',       # Custom user app configuration

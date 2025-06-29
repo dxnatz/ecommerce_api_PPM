@@ -1,18 +1,13 @@
 from collections import defaultdict
-
 from django.db import transaction
 from django.shortcuts import render
-
 from rest_framework import generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-from users.permissions import IsModerator
 from . import serializers
 from .models import Product, Cart, CartItem, Order, OrderItem
 from .serializers import ProductSerializer, CartSerializer, CartItemSerializer, OrderSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, IsAuthenticated
-
 
 class ProductListCreateAPIView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
@@ -25,8 +20,6 @@ class CartDetailAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         return Cart.objects.get(user=self.request.user)
-
-
 
 class CartItemCreateAPIView(generics.CreateAPIView):
     serializer_class = CartItemSerializer
@@ -84,7 +77,7 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
 class OrderDeleteAPIView(generics.DestroyAPIView):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated, IsModerator]
+    permission_classes = [IsAuthenticated]
 
 def index(request):
     return render(request, "index.html")

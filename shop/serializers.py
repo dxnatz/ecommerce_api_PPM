@@ -1,17 +1,25 @@
+from decimal import Decimal
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-
 from .models import Product, Cart, CartItem, Order, OrderItem
 
 class ProductSerializer(serializers.ModelSerializer):
     is_available = serializers.ReadOnlyField()
+    discounted_price = serializers.SerializerMethodField()
+    has_discount = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'description', 'price', 'stock', 'is_available']
+        fields = ['id', 'name', 'price', 'discount_percent', 'discounted_price', 'has_discount', 'description', 'stock', 'is_available']
 
-    def get_available(self, obj):
-        return obj.is_available
+    def get_discounted_price(self, obj):
+        if obj.discount_percent > 0:
+            sconto = Decimal(obj.discount_percent) / Decimal(100)
+            return (obj.price * (1 - sconto)).quantize(Decimal("0.01"))
+        return obj.price
+
+    def get_has_discount(self, obj):
+        return obj.discount_percent > 0
 
 # Per il CartItem, definiamo product come campo scrivibile (non solo read_only)
 class CartItemSerializer(serializers.ModelSerializer):

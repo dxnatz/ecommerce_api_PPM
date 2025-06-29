@@ -6,11 +6,10 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.views import TokenObtainPairView
 from users.models import CustomUser
-from users.permissions import IsModerator
-from users.serializers import UserSerializer
-
+from users.permissions import IsModeratore
+from users.serializers import UserSerializer, CustomTokenObtainPairSerializer
 
 class CustomAuthToken(ObtainAuthToken):
     def post(self, request, *args, **kwargs):
@@ -25,14 +24,14 @@ class CustomAuthToken(ObtainAuthToken):
 class UserBanAPIView(generics.UpdateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [IsAuthenticated, IsModerator]
+    permission_classes = [IsAuthenticated, IsModeratore]
 
     def perform_update(self, serializer):
-        serializer.save(is_banned=True)
+        serializer.save(is_banned=True, is_active=False)
 
 class UserMeAPIView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsModeratore]
 
     def get_object(self):
         return self.request.user
@@ -40,7 +39,7 @@ class UserMeAPIView(generics.RetrieveUpdateAPIView):
 class UserDeleteAPIView(generics.DestroyAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated, IsModerator]
+    permission_classes = [permissions.IsAuthenticated, IsModeratore]
 
     def perform_destroy(self, instance):
         if self.request.user == instance:
@@ -48,7 +47,7 @@ class UserDeleteAPIView(generics.DestroyAPIView):
         instance.delete()
 
 class UserUnbanAPIView(APIView):
-    permission_classes = [permissions.IsAuthenticated, IsModerator]
+    permission_classes = [permissions.IsAuthenticated, IsModeratore]
 
     def patch(self, request, pk):
         user = get_object_or_404(CustomUser, pk=pk)
@@ -56,6 +55,7 @@ class UserUnbanAPIView(APIView):
             return Response({"detail": "Utente non è bannato."}, status=status.HTTP_400_BAD_REQUEST)
 
         user.is_banned = False
+        user.is_active = True
         user.save()
         return Response({"detail": f"L'utente {user.username} è stato sbannato."}, status=status.HTTP_200_OK)
 
@@ -63,3 +63,6 @@ class UserRegisterAPIView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
     serializer_class = UserSerializer
     permission_classes = [AllowAny]
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
