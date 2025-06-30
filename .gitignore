@@ -1,3 +1,4 @@
 .env
 /staticfiles/
 .DS_Store
+.idea/
