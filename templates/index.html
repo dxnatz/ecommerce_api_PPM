@@ -122,7 +122,7 @@
 
     // Verifica se il token è valido chiamando un endpoint protetto
     function verificaToken(token) {
-        return fetch("https://ecommerce-api.up.railway.app/api/products/", {
+        return fetch("https://ecommerceapippm-production.up.railway.app/api/products/", {
             method: "GET",
             headers: { "Authorization": `Bearer ${token}` }
         }).then(res => {
@@ -155,7 +155,7 @@
     const username = document.getElementById("username").value;
     const password = document.getElementById("password").value;
 
-    fetch("https://ecommerce-api.up.railway.app/api/users/token/", {
+    fetch("https://ecommerceapippm-production.up.railway.app/api/users/token/", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -201,7 +201,7 @@
         const password = document.getElementById("reg-password").value;
         const bio = document.getElementById("reg-bio").value;
 
-        fetch("https://ecommerce-api.up.railway.app/api/users/register/", {
+        fetch("https://ecommerceapippm-production.up.railway.app/api/users/register/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -237,7 +237,7 @@
     function caricaProdotti() {
         const token = localStorage.getItem("token");
 
-        fetch("https://ecommerce-api.up.railway.app/api/products/", {
+        fetch("https://ecommerceapippm-production.up.railway.app/api/products/", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -297,7 +297,7 @@
         const bodyData = { product_id: productId, quantity: quantity };
         console.log("Body richiesta:", bodyData);
 
-        fetch("https://ecommerce-api.up.railway.app/api/cart/items/", {
+        fetch("https://ecommerceapippm-production.up.railway.app/api/cart/items/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -336,7 +336,7 @@
     function caricaCarrello() {
         const token = localStorage.getItem("token");
 
-        fetch("https://ecommerce-api.up.railway.app/api/cart/", {
+        fetch("https://ecommerceapippm-production.up.railway.app/api/cart/", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -421,7 +421,7 @@
     function decrementItem(id) {
         const token = localStorage.getItem("token");
 
-        fetch(`https://ecommerce-api.up.railway.app/api/cart/items/${id}/decrement/`, {
+        fetch(`https://ecommerceapippm-production.up.railway.app/api/cart/items/${id}/decrement/`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -443,7 +443,7 @@
     function rimuoviTutti(productId) {
         const token = localStorage.getItem("token");
 
-        fetch(`https://ecommerce-api.up.railway.app/api/cart/items/remove_all/${productId}/`, {
+        fetch(`https://ecommerceapippm-production.up.railway.app/api/cart/items/remove_all/${productId}/`, {
             method: "DELETE",
             headers: {
                 "Authorization": `Bearer ${token}`
@@ -468,7 +468,7 @@
     document.getElementById("checkout-btn").addEventListener("click", () => {
         const token = localStorage.getItem("token");
 
-        fetch("https://ecommerce-api.up.railway.app/api/cart/checkout/", {
+        fetch("https://ecommerceapippm-production.up.railway.app/api/cart/checkout/", {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${token}`

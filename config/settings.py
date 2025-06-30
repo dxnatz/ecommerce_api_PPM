@@ -140,7 +140,9 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 
 CORS_ALLOWED_ORIGINS = [
-    "https://ecommerceapippm-production.up.railway.app"
+    "https://ecommerceapippm-production.up.railway.app",
+    "https://ecommerce-api.up.railway.app"
+
 ]
 
 # Serve anche per le richieste con credenziali o headers personalizzati
