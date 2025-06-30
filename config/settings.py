@@ -143,6 +143,30 @@ CORS_ALLOWED_ORIGINS = [
     "https://ecommerceapippm-production.up.railway.app"
 ]
 
+# Serve anche per le richieste con credenziali o headers personalizzati
+CORS_ALLOW_CREDENTIALS = True
+
+# Permetti i metodi usati dal frontend (opzionale ma consigliato)
+CORS_ALLOW_METHODS = [
+    "GET",
+    "POST",
+    "PUT",
+    "PATCH",
+    "DELETE",
+    "OPTIONS",
+]
+
+# Se hai headers personalizzati
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
