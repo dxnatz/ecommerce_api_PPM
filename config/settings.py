@@ -33,6 +33,11 @@ DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://ecommerceapippm-production.up.railway.app',
+]
+
+
 
 # Application definition
 
