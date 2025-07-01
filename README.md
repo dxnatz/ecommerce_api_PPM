@@ -54,7 +54,7 @@ I **moderatori** hanno accesso a:
 - Aggiungi / modifica / elimina:
   - ordini e articoli dell'ordine
   - carrelli e articoli del carrello
-  - utenti (senza però modificare i vari permessi, ovvero supersuser, staffuser)
+  - utenti (senza però modificare i vari permessi, ovvero supersuser status, staff status e active)
 
 ### 📦 Responsabile prodotti
 I **responsabili prodotti** hanno accesso a:
