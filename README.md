@@ -1,80 +1,95 @@
-# E-Commerce API
+# 🛠️ Progetto E-Commerce API
 
-This project is a **Django-based e-commerce platform** with a RESTful API, designed to manage products, shopping carts, orders, and user authentication.
+Questo progetto è stato realizzato per l’insegnamento di **Progettazione e Produzione Multimediale**.
 
-## ⚙️ Technologies Used
+Si tratta di una **piattaforma e-commerce basata su Django** con un’API RESTful, pensata per la gestione di prodotti, carrelli, ordini e autenticazione degli utenti.
 
-- **Python:** for the back-end logic and handling data.
-- **HTML:** to create a user-friendly interface.
-- **JavaScript:** to enhance interactivity on the front-end.
+---
 
-## 🔐 Authentication
+## ⚙️ Tecnologie utilizzate
 
-Authentication is handled via **JSON Web Tokens (JWT)** using `SimpleJWT`.
+- **Python** – Logica backend e gestione dei dati
+- **HTML** – Creare una semplice e minimale interfaccia per l'utente
+- **JavaScript (fetch API)** – Comunicazione con il backend
 
-## 🛒 Available Features
+## 🔐 Autenticazione
 
-### 🛍️ Frontend (public API usage)
+L’autenticazione è gestita tramite **JSON Web Token (JWT)** usando il pacchetto `SimpleJWT`.  
+Gli utenti devono effettuare il login per accedere alle funzionalità protette come visualizzare i prodotti, il carrello ed effettuare il checkout.
 
-- User registration and login
-- Product listing
-- Add products to cart
-- Checkout and place orders
+## 🛒 Funzionalità disponibili
 
-### 🛠️ Backend (admin panel)
+### 🛍️ Frontend (accessibile a tutti)
 
-Available through the Django Admin interface:
+- Registrazione e login utenti  
+- Visualizzazione prodotti  
+- Aggiunta prodotti al carrello  
+- Rimozione prodotti dal carrello  
+- Checkout ordine
 
-- Add / edit / delete products  
-- Manage discounts on products  
-- Add / edit / delete orders and order items  
-- Add / edit / delete carts and cart items  
-- Add / edit / delete users  
-- Assign or remove user roles (e.g., moderators, product managers)  
-- Ban / unban users  
-- Full access to all data and models
+### 🛠️ Backend (pannello admin Django)
 
-## 👥 User Roles and Permissions
+- Aggiungi / modifica / elimina:
+    - prodotti
+    - ordini e articoli dell'ordine
+    - carrelli e articoli del carrello
+    - utenti
+- Gestisci gli sconti sugli articoli
+- Assegnare o rimuovere ruoli utenti (ad esempio moderatore oppure responsabile prodotti)  
+- Bannare / sbannare utenti  
+- Accesso completo a tutti i dati e modelli
+
+## 👥 Ruoli utente e permessi
+
+I ruoli sono gestiti con il sistema **Group & Permissions** integrato in Django.
 
 ### 👑 Superuser
-Superusers have full access to the entire backend through the Django Admin interface.  
-They can manage all models, users, and permissions without restrictions.
+I **superuser** hanno pieno accesso all'intero backend tramite l'interfaccia di amministrazione di Django.  
+Possono gestire tutti i modelli, gli utenti e le autorizzazioni senza restrizioni.
 
-### 🛡️ Moderator
-Moderators have access to:
+### 🛡️ Moderatore
+I **moderatori** hanno accesso a:
 
-- View all products and users  
-- Add, edit, and delete:
-  - Orders  
-  - Order items  
-  - Carts  
-  - Cart items
+- Visualizzare tutti i prodotti e gli utenti  
+- Aggiungi / modifica / elimina:
+  - ordini e articoli dell'ordine
+  - carrelli e articoli del carrello
 
-### 📦 Product Manager
-Product managers have access to:
+### 📦 Responsabile prodotti
+I **responsabili prodotti** hanno accesso a:
 
-- View all orders, order items, carts, cart items, and users
-- Add, edit, and delete:
-  - Products
+- Visualizzare tutti gli ordini e articoli dell'ordine, i carrelli e articoli del carrello e gli utenti
+- Aggiungi / modifica / elimina:
+  - Prodotti
 
-> 📝 **Note for the reviewer**:  
-> User roles are managed using Django's built-in group and permission system.
+## 🔐 Account di test (pannello admin)
 
-## 🔐 Admin Test Accounts
+Per testare i diversi ruoli e i relativi permessi è possibile utilizzare i seguenti account pre-registrati:
 
-To test the different roles and their permissions, you can use the following pre-registered accounts:
+| Ruolo              | Username      | Password     |
+|--------------------|---------------|--------------|
+| Superuser          | `mattia`      | `passmat123` |
+| Moderatore         | `gabriele`    | `passgab123` |
+| Responsabile prodotti   | `filippo`     | `passfil123` |
+| Utente Normale     | `martino`     | `passmar123` |
 
-| Role                | Username      | Password     |
-|---------------------|---------------|--------------|
-| Superuser           | mattia        | passmat123   |
-| Moderator           | gabriele      | passgab123   |
-| Product Manager     | filippo       | passfil123   |
-| Regular User        | martino       | passmar123   |
+## 🧪 Come testare le funzionalità del backend
 
-## 🧪 How to Test Backend Functionalities
+Tutte le funzionalità di backend possono essere testate accedendo al **pannello di amministrazione di Django** all'indirizzo `https://ecommerceapippm.up.railway.app/admin/` utilizzando le credenziali fornite sopra.
+Una volta effettuato l'accesso, ogni utente vedrà solo le sezioni e le azioni consentite dal proprio ruolo.
 
-All backend features can be tested by accessing the **Django Admin panel** at http://127.0.0.1:8000/admin using the credentials provided above.
-Once logged in, each user will only see the sections and actions permitted by their role.
+Ricordo che **gli utenti normali non hanno accesso al pannello di amministrazione del backend** e possono utilizzare solo le funzionalità del frontend.
+Solo gli account Superuser, Moderatore e Responsabile prodotti hanno accesso al backend con diversi livelli di autorizzazione.
 
-Please note that **Regular Users do not have access to the backend admin panel** and can only use the frontend features.
-Only Superuser, Moderator, and Product Manager accounts have backend access with different permission levels.
+## 🚀 Deploy
+
+Il progetto è stato deployato su **Railway**.
+Come database ho usato **PostgreSQL** fornito all'interno di Railway.
+
+### 🌍 URL produzione
+
+Frontend HTML:  
+👉 `https://ecommerceapippm.up.railway.app/`  
+
+Backend API:  
+👉 `https://ecommerceapippm.up.railway.app/admin/`
