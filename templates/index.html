@@ -399,20 +399,6 @@
             }
             totalDiv.innerText = `Totale ordine: € ${totale.toFixed(2)}`;
 
-            // Event listener per rimuovere uno o tutti gli articoli
-            document.querySelectorAll(".remove-one").forEach(button => {
-                button.addEventListener("click", (e) => {
-                    const id = e.target.getAttribute("data-id");
-                    decrementItem(id);
-                });
-            });
-
-            document.querySelectorAll(".remove-all").forEach(button => {
-                button.addEventListener("click", (e) => {
-                    const productId = e.target.getAttribute("data-product-id");
-                    rimuoviTutti(productId);
-                });
-            });
         })
         .catch(err => {
             alert(err.message);
