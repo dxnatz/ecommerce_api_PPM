@@ -26,7 +26,7 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-_+7eas1f1zk$_8*68ebylyt77eq2jlxk!c^$3vl1bgyti565hc'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -34,7 +34,7 @@ DEBUG = False
 ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://ecommerceapippm-production.up.railway.app',
+    'https://ecommerceapippm.up.railway.app',
 ]
 
 
@@ -103,8 +103,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
         #'NAME': BASE_DIR / 'db.sqlite3',
     #}
 #}
-
-import dj_database_url
 
 DATABASES = {
     'default': env.db()
