@@ -33,11 +33,18 @@ class CustomUserAdmin(UserAdmin):
     list_filter = ['is_staff', 'is_superuser', 'is_banned']
 
     def get_readonly_fields(self, request, obj=None):
-        # Se l'utente che sta modificando NON è superuser
+        readonly = []
+
+        # Se chi modifica NON è superuser
         if not request.user.is_superuser:
-            # Rendo questi campi readonly (non modificabili)
-            return 'is_active', 'is_staff', 'is_superuser'
-        # Altrimenti nessun campo readonly (superuser può modificare tutto)
-        return super().get_readonly_fields(request, obj)
+            # Rendo readonly i permessi admin
+            readonly.extend(['is_active', 'is_staff', 'is_superuser'])
+
+        # Se l'utente che si sta modificando è superuser
+        if obj and obj.is_superuser:
+            # Rendo readonly il campo is_banned così non può essere bannato
+            readonly.append('is_banned')
+
+        return readonly
 
 admin.site.register(CustomUser, CustomUserAdmin)
