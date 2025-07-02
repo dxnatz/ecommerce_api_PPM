@@ -35,7 +35,7 @@ Gli utenti devono effettuare il login per accedere alle funzionalità protette c
     - carrelli e articoli del carrello
     - utenti
 - Gestisci gli sconti sugli articoli
-- Assegnare o rimuovere ruoli utenti (ad esempio moderatore oppure responsabile prodotti)  
+- Assegni o rimuovi ruoli utenti (ad esempio **moderatore** oppure **responsabile prodotti**)  
 - Bannare / sbannare utenti  
 - Accesso completo a tutti i dati e modelli
 
@@ -50,10 +50,11 @@ Possono gestire tutti i modelli, gli utenti e le autorizzazioni senza restrizion
 ### 🛡️ Moderatore
 I **moderatori** hanno accesso a:
 
-- Visualizzare tutti i prodotti e gli utenti  
+- Visualizzare tutti i prodotti
 - Aggiungi / modifica / elimina:
   - ordini e articoli dell'ordine
   - carrelli e articoli del carrello
+  - utenti (senza però modificare i vari permessi, ovvero supersuser status, staff status e active)
 
 ### 📦 Responsabile prodotti
 I **responsabili prodotti** hanno accesso a:
