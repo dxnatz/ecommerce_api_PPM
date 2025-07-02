@@ -25,7 +25,7 @@ Gli utenti devono effettuare il login per accedere alle funzionalità protette c
 - Visualizzazione prodotti  
 - Aggiunta prodotti al carrello  
 - Rimozione prodotti dal carrello  
-- Checkout ordine
+- Checkout ordine (senza pagamento)
 
 ### 🛠️ Backend (pannello admin Django)
 
