@@ -30,7 +30,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         user = authenticate(username=username, password=password)
 
         if user is None:
-            # Controllo esplicito sul DB per messaggi personalizzati
             user_obj = CustomUser.objects.filter(username=username).first()
             if user_obj:
                 if user_obj.is_banned:
@@ -40,7 +39,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             else:
                 raise AuthenticationFailed("Credenziali non valide")
 
-        # Se l’utente esiste e non è bannato
         if user.is_banned:
             raise AuthenticationFailed("Utente bannato, impossibile fare il login")
 

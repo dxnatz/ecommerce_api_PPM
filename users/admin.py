@@ -35,14 +35,10 @@ class CustomUserAdmin(UserAdmin):
     def get_readonly_fields(self, request, obj=None):
         readonly = []
 
-        # Se chi modifica NON è superuser
         if not request.user.is_superuser:
-            # Rendo readonly i permessi admin
             readonly.extend(['is_active', 'is_staff', 'is_superuser'])
 
-        # Se l'utente che si sta modificando è superuser
         if obj and obj.is_superuser:
-            # Rendo readonly il campo is_banned così non può essere bannato
             readonly.append('is_banned')
 
         return readonly

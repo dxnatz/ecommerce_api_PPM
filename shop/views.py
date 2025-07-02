@@ -42,12 +42,9 @@ class CartItemCreateAPIView(generics.CreateAPIView):
             )
 
         if existing_item:
-            # Aggiorna la quantità esistente
             existing_item.quantity += quantity_to_add
             existing_item.save()
-            # Non salvare un nuovo oggetto, quindi bypassa serializer.save()
         else:
-            # Crea un nuovo item
             serializer.save(cart=cart)
 
 class OrderListCreateAPIView(generics.ListCreateAPIView):
@@ -60,10 +57,8 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
     def perform_create(self, serializer):
         order = serializer.save(user=self.request.user)
 
-        # Recupera il carrello dell’utente
         cart = Cart.objects.get(user=self.request.user)
 
-        # Per ogni item del carrello, crea un OrderItem
         for item in cart.items.all():
             OrderItem.objects.create(
                 order=order,
@@ -71,7 +66,6 @@ class OrderListCreateAPIView(generics.ListCreateAPIView):
                 quantity=item.quantity
             )
 
-        # Svuota il carrello
         cart.items.all().delete()
 
 class OrderDeleteAPIView(generics.DestroyAPIView):
@@ -113,7 +107,7 @@ class RemoveAllFromCartAPIView(APIView):
 class CheckoutAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @transaction.atomic  # garantisce atomicità DB, rollback se errore
+    @transaction.atomic
     def post(self, request):
         user = request.user
         cart_items = CartItem.objects.select_related('product').filter(cart__user=user)
@@ -125,7 +119,6 @@ class CheckoutAPIView(APIView):
         for item in cart_items:
             prodotto_totali[item.product.id] += item.quantity
 
-        # Controlla stock
         for product_id, total_quantity in prodotto_totali.items():
             prodotto = Product.objects.get(id=product_id)
             if total_quantity > prodotto.stock:

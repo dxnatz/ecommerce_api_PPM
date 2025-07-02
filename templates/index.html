@@ -151,48 +151,47 @@
 
     // Event listeners
     form.addEventListener("submit", function(event) {
-    event.preventDefault();
+        event.preventDefault();
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
 
-    fetch(`${API_BASE}/api/users/token/`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username, password })
-    })
-    .then(async res => {
-        if (!res.ok) {
-            // Provo a leggere il messaggio d’errore dal JSON
-            let errMsg = "Errore di login";
-            try {
-                const errData = await res.json();
-                if (errData.detail) {
-                    errMsg = errData.detail;  // Qui prende il messaggio personalizzato dal backend
+        fetch(`${API_BASE}/api/users/token/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ username, password })
+        })
+        .then(async res => {
+            if (!res.ok) {
+                let errMsg = "Errore di login";
+                try {
+                    const errData = await res.json();
+                    if (errData.detail) {
+                        errMsg = errData.detail;
+                    }
+                } catch {
+                    errMsg = `Errore ${res.status}: ${res.statusText}`;
                 }
-            } catch {
-                // Se non è JSON, lascio il messaggio generico
+                throw new Error(errMsg);
             }
-            throw new Error(errMsg);
-        }
-        return res.json();
-    })
-    .then(data => {
-        localStorage.setItem("token", data.access);
-        responseDiv.innerText = "Login effettuato con successo!";
-        responseDiv.style.color = "green";
+            return res.json();
+        })
+        .then(data => {
+            localStorage.setItem("token", data.access);
+            responseDiv.innerText = "Login effettuato con successo!";
+            responseDiv.style.color = "green";
 
-        mostraContenuto();
-        caricaProdotti();
-        caricaCarrello();
-    })
-    .catch(err => {
-        responseDiv.innerText = err.message;
-        responseDiv.style.color = "red";
+            mostraContenuto();
+            caricaProdotti();
+            caricaCarrello();
+        })
+        .catch(err => {
+            responseDiv.innerText = err.message;
+            responseDiv.style.color = "red";
+        });
     });
-});
 
     registerForm.addEventListener("submit", function(event) {
         event.preventDefault();
@@ -308,17 +307,16 @@
         })
         .then(async res => {
             if (!res.ok) {
-                // Provo a leggere il messaggio di errore dal JSON
                 let errMsg = `Errore ${res.status}: ${res.statusText}`;
                 try {
                     const errData = await res.json();
-                    // Se è un ValidationError DRF, potrebbe essere un oggetto con chiavi e liste di messaggi
+
                     if (errData && typeof errData === 'object') {
                         const messages = Object.values(errData).flat();
                         errMsg = messages.join(" ");
                     }
                 } catch {
-                    // se non è JSON o fallisce, lascio il messaggio di default
+                    errMsg = `Errore ${res.status}: ${res.statusText}`;
                 }
                 throw new Error(errMsg);
             }
@@ -330,7 +328,7 @@
             caricaProdotti();
         })
         .catch(err => {
-            alert(err.message);  // Qui mostri il messaggio personalizzato
+            alert(err.message);
         });
     }
 
@@ -352,11 +350,10 @@
             tbody.innerHTML = "";
 
             const prodottiRaggruppati = {};
-            let totale = 0;  // variabile per il totale
+            let totale = 0;
 
             data.items.forEach(item => {
                 const nomeProdotto = item.product && item.product.name ? item.product.name : "Prodotto sconosciuto";
-                // Converto a numero il prezzo per evitare problemi
                 const prezzoProdotto = parseFloat(item.product && item.product.discounted_price
                     ? item.product.discounted_price
                     : item.product.price) || 0;
@@ -372,7 +369,7 @@
                     };
                 }
 
-                totale += prezzoProdotto * item.quantity;  // sommo il costo parziale solo UNA VOLTA
+                totale += prezzoProdotto * item.quantity;
             });
 
             for (const [nome, info] of Object.entries(prodottiRaggruppati)) {
@@ -420,7 +417,7 @@
         })
         .then(data => {
             alert(data.detail);
-            caricaCarrello();  // aggiorna il carrello dopo la modifica
+            caricaCarrello();
         })
         .catch(err => {
             alert(err.message);
@@ -440,11 +437,11 @@
             if (!res.ok) {
                 throw new Error(`Errore ${res.status}: ${res.statusText}`);
             }
-            return res.text(); // o .json() se rispondi con JSON
+            return res.text();
         })
         .then(() => {
             alert("Prodotto rimosso completamente dal carrello!");
-            caricaCarrello(); // aggiorna la tabella
+            caricaCarrello();
         })
         .catch(err => {
             console.error("Errore:", err);
@@ -467,7 +464,7 @@
         })
         .then(data => {
             alert(data.detail);
-            caricaCarrello(); // aggiorna carrello a vuoto
+            caricaCarrello();
             caricaProdotti();
         })
         .catch(err => {
@@ -493,7 +490,6 @@
         }
     });
 
-    // Logout
     logoutBtn.addEventListener("click", () => {
         localStorage.removeItem("token");
         mostraLogin();
