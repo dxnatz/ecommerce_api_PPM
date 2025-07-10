@@ -82,6 +82,17 @@ Una volta effettuato l'accesso, ogni utente vedrà solo le sezioni e le azioni c
 Ricordo che **gli utenti normali non hanno accesso al pannello di amministrazione del backend** e possono utilizzare solo le funzionalità del frontend.
 Solo gli account Superuser, Moderatore e Responsabile prodotti hanno accesso al backend con diversi livelli di autorizzazione.
 
+## 🔗 Endpoint Principali
+
+| Metodo | Endpoint                                      | Descrizione                                      | Autenticazione |
+|--------|-----------------------------------------------|--------------------------------------------------|----------------|
+| POST   | `/api/users/register/`                        | Registra un nuovo utente                         | ❌             |
+| POST   | `/api/users/token/`                           | Login e ottieni il token JWT                     | ❌             |
+| GET    | `/api/products/`                              | Restituisce la lista dei prodotti                | ❌             |
+| POST   | `/api/cart/items/`                            | Aggiunge un prodotto al carrello                 | ✅             |
+| GET    | `/api/cart/`                                  | Mostra il contenuto del carrello                 | ✅             |
+| POST   | `/api/cart/checkout/`                         | Effettua il checkout dell’ordine                 | ✅             |
+
 ## 🚀 Deploy
 
 Il progetto è stato deployato su **Railway**.
